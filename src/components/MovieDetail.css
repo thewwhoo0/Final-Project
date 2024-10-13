@@ -1,0 +1,31 @@
+.movie-detail {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.movie-banner {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.movie-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.movie-description {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 10px 0;
+}
+
+.movie-info {
+  font-size: 14px;
+  color: #555;
+  margin: 5px 0;
+}
