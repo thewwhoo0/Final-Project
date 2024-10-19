@@ -11,22 +11,26 @@ import "./App.css";
 function App() {
   const [movies, setMovies] = useState([]);
   const [theme, setTheme] = useState("light");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [favorites, setFavorites] = useState([]);
 
   // Fetch movies from the MovieDB API
   useEffect(() => {
     const fetchMovies = async () => {
       try {
         const response = await axios.get(
-          `https://api.themoviedb.org/3/movie/popular?api_key=1d1d8844ae1e746c459e7be85c15c840`
+          `https://api.themoviedb.org/3/movie/popular?api_key=1d1d8844ae1e746c459e7be85c15c840&page=${currentPage}`
         );
         setMovies(response.data.results);
+        setTotalPages(response.data.total_pages);
       } catch (error) {
         console.error("Error fetching movies:", error);
       }
     };
 
     fetchMovies();
-  }, []);
+  }, [currentPage]);
 
   // Load theme from local storage
   useEffect(() => {
@@ -47,26 +51,77 @@ function App() {
     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
   };
 
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const toggleFavorite = (movie) => {
+    setFavorites((prevFavorites) => {
+      if (prevFavorites.some((fav) => fav.id === movie.id)) {
+        return prevFavorites.filter((fav) => fav.id !== movie.id);
+      } else {
+        return [...prevFavorites, movie];
+      }
+    });
+  };
+
   return (
     <Router>
       <div className={`App ${theme}`}>
         <Header toggleTheme={toggleTheme} />
         <SearchBar />
         <Routes>
-          {" "}
-          {/* Use Routes instead of Switch */}
           <Route
             path="/"
             element={
-              <div className="movie-list">
-                {movies.map((movie) => (
-                  <MovieCard key={movie.id} movie={movie} />
-                ))}
-              </div>
+              <>
+                <div className="movie-list">
+                  {movies.map((movie) => (
+                    <MovieCard
+                      key={movie.id}
+                      movie={movie}
+                      isFavorite={favorites.some((fav) => fav.id === movie.id)}
+                      toggleFavorite={toggleFavorite}
+                    />
+                  ))}
+                </div>
+                <div className="pagination">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <span>
+                    {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+                <div className="favorites-list">
+                  <h2>Favorites</h2>
+                  <div className="movie-list">
+                    {favorites.map((movie) => (
+                      <MovieCard
+                        key={movie.id}
+                        movie={movie}
+                        isFavorite={true}
+                        toggleFavorite={toggleFavorite}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
             }
           />
           <Route path="/movie/:id" element={<MovieDetail />} />
-          {/* Add more routes as needed */}
         </Routes>
         <Footer />
       </div>

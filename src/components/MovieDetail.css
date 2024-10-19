@@ -29,3 +29,20 @@
   color: #555;
   margin: 5px 0;
 }
+
+.favorite-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  margin-top: 10px;
+}
+
+.favorites-container {
+  margin-top: 40px;
+}
+
+.favorites-container h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
