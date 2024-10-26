@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; // Change Switch to Routes
 import axios from "axios";
 import MovieCard from "./components/MovieCard";
-import MovieDetailPage from "./components/MovieDetailPage";
 import SearchBar from "./components/SearchBar"; // Changed from SearchBar,js to SearchBar.js
 import Footer from "./components/Footer";
 import Header from "./components/Header"; // Make sure to import Header
 import FeaturedMovies from "./components/FeaturedMovies";
 import ReservationForm from "./components/ReservationForm";
 import "./App.css";
+import MovieDetail from "./components/MovieDetail";
 
 const HomePage = ({
   isSearching,
@@ -218,7 +218,7 @@ function App() {
               />
             }
           />
-          <Route path="/movie/:id" element={<MovieDetailPage />} />
+          <Route path="/movie/:id" element={<MovieDetail />} />
           <Route path="/reservation/:id" element={<ReservationForm />} />
           <Route
             path="/favorites"

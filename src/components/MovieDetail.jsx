@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import "./MovieDetail.css";
-
+import { useNavigate } from "react-router-dom";
 const MovieDetail = () => {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
   const API_KEY = "1d1d8844ae1e746c459e7be85c15c840";
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchMovie = async () => {
       try {
@@ -21,6 +21,10 @@ const MovieDetail = () => {
     };
     fetchMovie();
   }, [id]);
+
+  const handleReserveClick = () => {
+    navigate(`/reservation/${id}`);
+  };
 
   if (!movie) return <p>Loading...</p>;
 
@@ -38,6 +42,8 @@ const MovieDetail = () => {
       <p>
         <strong>Rating:</strong> {movie.vote_average}
       </p>
+
+      <button onClick={handleReserveClick}>Reserve Tickets</button>
     </div>
   );
 };
