@@ -2,12 +2,74 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; // Change Switch to Routes
 import axios from "axios";
 import MovieCard from "./components/MovieCard";
-import MovieDetail from "./components/MovieDetail";
+import MovieDetailPage from "./components/MovieDetailPage";
 import SearchBar from "./components/SearchBar"; // Changed from SearchBar,js to SearchBar.js
 import Footer from "./components/Footer";
 import Header from "./components/Header"; // Make sure to import Header
 import FeaturedMovies from "./components/FeaturedMovies";
+import ReservationForm from "./components/ReservationForm";
 import "./App.css";
+
+const HomePage = ({
+  isSearching,
+  featuredMovies,
+  searchResults,
+  movies,
+  favorites,
+  toggleFavorite,
+  handlePageChange,
+  currentPage,
+  totalPages,
+}) => (
+  <>
+    {!isSearching && <FeaturedMovies movies={featuredMovies} />}
+    <div className="movie-list">
+      {(isSearching ? searchResults : movies).map((movie) => (
+        <MovieCard
+          key={movie.id}
+          movie={movie}
+          isFavorite={favorites.some((fav) => fav.id === movie.id)}
+          toggleFavorite={toggleFavorite}
+        />
+      ))}
+    </div>
+    {!isSearching && (
+      <div className="pagination">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>
+          {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
+    )}
+  </>
+);
+
+const FavoritesPage = ({ favorites, toggleFavorite }) => (
+  <div className="favorites-list">
+    <h2>Favorites</h2>
+    <div className="movie-list">
+      {favorites.map((movie) => (
+        <MovieCard
+          key={movie.id}
+          movie={movie}
+          isFavorite={true}
+          toggleFavorite={toggleFavorite}
+        />
+      ))}
+    </div>
+  </div>
+);
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -18,6 +80,7 @@ function App() {
   const [favorites, setFavorites] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Fetch movies from the MovieDB API
   useEffect(() => {
@@ -91,7 +154,7 @@ function App() {
         const combinedMovies = [
           ...topRated.data.results,
           ...popular.data.results,
-          ...upcoming.data.results,
+          ...upcoming.data.results.slice(0, 2),
         ];
 
         setFeaturedMovies(combinedMovies);
@@ -120,10 +183,18 @@ function App() {
     setSearchResults([]);
   };
 
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  useEffect(() => {
+    document.body.classList.toggle("dark-mode", isDarkMode);
+  }, [isDarkMode]);
+
   return (
     <Router>
-      <div className={`App ${theme}`}>
-        <Header toggleTheme={toggleTheme} />
+      <div className={`App ${isDarkMode ? "dark-mode" : ""}`}>
+        <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
         <SearchBar onSearch={handleSearch} />
         {isSearching && (
           <button onClick={clearSearch} className="clear-search">
@@ -134,57 +205,28 @@ function App() {
           <Route
             path="/"
             element={
-              <>
-                {!isSearching && <FeaturedMovies movies={featuredMovies} />}
-                <div className="movie-list">
-                  {(isSearching ? searchResults : movies).map((movie) => (
-                    <MovieCard
-                      key={movie.id}
-                      movie={movie}
-                      isFavorite={favorites.some((fav) => fav.id === movie.id)}
-                      toggleFavorite={toggleFavorite}
-                    />
-                  ))}
-                </div>
-                {!isSearching && (
-                  <div className="pagination">
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </button>
-                    <span>
-                      {currentPage} of {totalPages}
-                    </span>
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </button>
-                  </div>
-                )}
-              </>
+              <HomePage
+                isSearching={isSearching}
+                featuredMovies={featuredMovies}
+                searchResults={searchResults}
+                movies={movies}
+                favorites={favorites}
+                toggleFavorite={toggleFavorite}
+                handlePageChange={handlePageChange}
+                currentPage={currentPage}
+                totalPages={totalPages}
+              />
             }
           />
-          <Route path="/movie/:id" element={<MovieDetail />} />
+          <Route path="/movie/:id" element={<MovieDetailPage />} />
+          <Route path="/reservation/:id" element={<ReservationForm />} />
           <Route
             path="/favorites"
             element={
-              <div className="favorites-list">
-                <h2>Favorites</h2>
-                <div className="movie-list">
-                  {favorites.map((movie) => (
-                    <MovieCard
-                      key={movie.id}
-                      movie={movie}
-                      isFavorite={true}
-                      toggleFavorite={toggleFavorite}
-                    />
-                  ))}
-                </div>
-              </div>
+              <FavoritesPage
+                favorites={favorites}
+                toggleFavorite={toggleFavorite}
+              />
             }
           />
         </Routes>
