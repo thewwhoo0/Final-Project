@@ -1,12 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Header.css";
 
 const Header = () => {
+  const navigate = useNavigate();
   return (
     <header className="header">
       <div className="header-content">
-        <h1 className="logo">Cinema+</h1>
+        <h1 onClick={() => navigate("/")} className="logo">
+          Cinema+
+        </h1>
         <nav className="navigation">
           <ul>
             <li>

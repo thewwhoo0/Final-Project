@@ -1,5 +1,5 @@
 .header {
-  background-color: #444; /* Dark background color */
+  background-color: #444444; /* Dark background color */
   color: white; /* White text color */
   padding: 15px 20px; /* Padding for spacing */
 }
@@ -15,6 +15,7 @@
 .logo {
   font-size: 24px; /* Larger font for logo */
   font-weight: bold; /* Bold font for emphasis */
+  cursor: pointer;
 }
 
 .navigation ul {

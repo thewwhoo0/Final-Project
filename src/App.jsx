@@ -6,14 +6,18 @@ import MovieDetail from "./components/MovieDetail";
 import SearchBar from "./components/SearchBar"; // Changed from SearchBar,js to SearchBar.js
 import Footer from "./components/Footer";
 import Header from "./components/Header"; // Make sure to import Header
+import FeaturedMovies from "./components/FeaturedMovies";
 import "./App.css";
 
 function App() {
   const [movies, setMovies] = useState([]);
+  const [featuredMovies, setFeaturedMovies] = useState([]);
   const [theme, setTheme] = useState("light");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [favorites, setFavorites] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Fetch movies from the MovieDB API
   useEffect(() => {
@@ -68,18 +72,72 @@ function App() {
     });
   };
 
+  // Fetch featured movies
+  useEffect(() => {
+    const fetchFeaturedMovies = async () => {
+      try {
+        const [topRated, popular, upcoming] = await Promise.all([
+          axios.get(
+            `https://api.themoviedb.org/3/movie/top_rated?api_key=1d1d8844ae1e746c459e7be85c15c840&page=1`
+          ),
+          axios.get(
+            `https://api.themoviedb.org/3/movie/popular?api_key=1d1d8844ae1e746c459e7be85c15c840&page=1`
+          ),
+          axios.get(
+            `https://api.themoviedb.org/3/movie/upcoming?api_key=1d1d8844ae1e746c459e7be85c15c840&page=1`
+          ),
+        ]);
+
+        const combinedMovies = [
+          ...topRated.data.results,
+          ...popular.data.results,
+          ...upcoming.data.results,
+        ];
+
+        setFeaturedMovies(combinedMovies);
+      } catch (error) {
+        console.error("Error fetching featured movies:", error);
+      }
+    };
+
+    fetchFeaturedMovies();
+  }, []);
+
+  const handleSearch = async (query) => {
+    setIsSearching(true);
+    try {
+      const response = await axios.get(
+        `https://api.themoviedb.org/3/search/movie?api_key=1d1d8844ae1e746c459e7be85c15c840&query=${query}&page=1`
+      );
+      setSearchResults(response.data.results);
+    } catch (error) {
+      console.error("Error searching movies:", error);
+    }
+  };
+
+  const clearSearch = () => {
+    setIsSearching(false);
+    setSearchResults([]);
+  };
+
   return (
     <Router>
       <div className={`App ${theme}`}>
         <Header toggleTheme={toggleTheme} />
-        <SearchBar />
+        <SearchBar onSearch={handleSearch} />
+        {isSearching && (
+          <button onClick={clearSearch} className="clear-search">
+            Clear Search
+          </button>
+        )}
         <Routes>
           <Route
             path="/"
             element={
               <>
+                {!isSearching && <FeaturedMovies movies={featuredMovies} />}
                 <div className="movie-list">
-                  {movies.map((movie) => (
+                  {(isSearching ? searchResults : movies).map((movie) => (
                     <MovieCard
                       key={movie.id}
                       movie={movie}
@@ -88,40 +146,47 @@ function App() {
                     />
                   ))}
                 </div>
-                <div className="pagination">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </button>
-                  <span>
-                    {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </div>
-                <div className="favorites-list">
-                  <h2>Favorites</h2>
-                  <div className="movie-list">
-                    {favorites.map((movie) => (
-                      <MovieCard
-                        key={movie.id}
-                        movie={movie}
-                        isFavorite={true}
-                        toggleFavorite={toggleFavorite}
-                      />
-                    ))}
+                {!isSearching && (
+                  <div className="pagination">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </button>
+                    <span>
+                      {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
                   </div>
-                </div>
+                )}
               </>
             }
           />
           <Route path="/movie/:id" element={<MovieDetail />} />
+          <Route
+            path="/favorites"
+            element={
+              <div className="favorites-list">
+                <h2>Favorites</h2>
+                <div className="movie-list">
+                  {favorites.map((movie) => (
+                    <MovieCard
+                      key={movie.id}
+                      movie={movie}
+                      isFavorite={true}
+                      toggleFavorite={toggleFavorite}
+                    />
+                  ))}
+                </div>
+              </div>
+            }
+          />
         </Routes>
         <Footer />
       </div>

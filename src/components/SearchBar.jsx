@@ -4,25 +4,21 @@ import "./SearchBar.css";
 const SearchBar = ({ onSearch }) => {
   const [query, setQuery] = useState("");
 
-  const handleSearch = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     onSearch(query);
-    setQuery("");
   };
 
   return (
     <div className="search-bar">
-      <form onSubmit={handleSearch}>
+      <form onSubmit={handleSubmit}>
         <input
           type="text"
-          className="search-input"
           placeholder="Search for a movie..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <button type="submit" className="search-button">
-          Search
-        </button>
+        <button type="submit">Search</button>
       </form>
     </div>
   );
